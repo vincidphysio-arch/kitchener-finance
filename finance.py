@@ -67,10 +67,8 @@ def main():
         year_df = df[df['Year'] == selected_year]
 
         # --- MAIN PAGE ---
-        # *** UPDATED TITLE HERE ***
         st.title(f"💰 Kitchener Financial Overview: {selected_year}")
         
-        # Yearly Totals
         year_total = year_df['Amount'].sum()
         year_tripic = year_df[year_df['Doctor'].astype(str).str.contains("Tripic", case=False)]['Amount'].sum()
         year_cartagena = year_df[year_df['Doctor'].astype(str).str.contains("Cartagena", case=False)]['Amount'].sum()
@@ -103,5 +101,16 @@ def main():
         st.markdown(f"**{view_title}** - Total: **${month_total:,.2f}**")
         
         display_cols = ["Date", "Sender", "Amount", "Doctor"]
+        
+        # Make sure 'Date Object' is used for sorting
         st.dataframe(
-            display_df.sort_values(by="Date Object
+            display_df.sort_values(by="Date Object", ascending=False)[display_cols], 
+            use_container_width=True, 
+            hide_index=True
+        )
+        
+    else:
+        st.info("Sheet is connected, but empty.")
+
+if __name__ == "__main__":
+    main()
