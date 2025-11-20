@@ -27,7 +27,6 @@ def get_data():
     sh = gc.open(SHEET_NAME)
     worksheet = sh.worksheet("Payments")
     
-    # Safe loading method (Force headers)
     data = worksheet.get_all_values()
     headers = data[0]
     rows = data[1:]
@@ -55,54 +54,44 @@ def main():
         df['Date Object'] = pd.to_datetime(df['Date'], errors='coerce')
         df = df.dropna(subset=['Date Object'])
         
-        # Clean Money
         df['Amount'] = pd.to_numeric(df['Amount'].astype(str).str.replace('$','').str.replace(',',''), errors='coerce')
         
-        # Create Time Columns
         df['Year'] = df['Date Object'].dt.year
-        df['Month_Name'] = df['Date Object'].dt.strftime('%B') # e.g. "November"
-        df['Month_Year'] = df['Date Object'].dt.strftime('%B %Y') # e.g. "November 2025"
+        df['Month_Name'] = df['Date Object'].dt.strftime('%B')
+        df['Month_Year'] = df['Date Object'].dt.strftime('%B %Y')
 
-        # --- SIDEBAR CONTROLS ---
+        # --- SIDEBAR ---
         st.sidebar.header("📅 Time Filters")
-        
-        # A. Year Selector
         available_years = sorted(df['Year'].unique(), reverse=True)
         selected_year = st.sidebar.selectbox("Select Year", available_years)
-        
-        # Filter data to this year ONLY
         year_df = df[df['Year'] == selected_year]
 
-        # --- MAIN PAGE: YEARLY OVERVIEW ---
-        st.title(f"💰 Financial Overview: {selected_year}")
+        # --- MAIN PAGE ---
+        # *** UPDATED TITLE HERE ***
+        st.title(f"💰 Kitchener Financial Overview: {selected_year}")
         
-        # Calculate Yearly Totals
+        # Yearly Totals
         year_total = year_df['Amount'].sum()
         year_tripic = year_df[year_df['Doctor'].astype(str).str.contains("Tripic", case=False)]['Amount'].sum()
         year_cartagena = year_df[year_df['Doctor'].astype(str).str.contains("Cartagena", case=False)]['Amount'].sum()
 
-        # Display Yearly Metrics
         ym1, ym2, ym3 = st.columns(3)
-        ym1.metric(f"Yearly Total ({selected_year})", f"${year_total:,.2f}")
+        ym1.metric(f"Total Kitchener Income ({selected_year})", f"${year_total:,.2f}")
         ym2.metric("👨‍⚕️ Dr. Tripic (Year)", f"${year_tripic:,.2f}")
         ym3.metric("👩‍⚕️ Dr. Cartagena (Year)", f"${year_cartagena:,.2f}")
 
         st.divider()
 
-        # --- MONTHLY BREAKDOWN ---
+        # --- MONTHLY DETAILS ---
         st.subheader(f"🗓️ Monthly Details ({selected_year})")
         
-        # B. Month Selector (Specific to the selected year)
-        # We add an "All Months" option
         available_months = list(year_df['Month_Name'].unique())
-        # Sort months correctly (Jan, Feb, Mar...) not Alphabetical (Apr, Aug...)
         month_order = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
         available_months.sort(key=lambda x: month_order.index(x) if x in month_order else 99)
         
         view_options = ["All Months"] + available_months
         selected_month_view = st.selectbox("Filter by Month", view_options)
 
-        # Filter Logic
         if selected_month_view == "All Months":
             display_df = year_df
             view_title = f"All Activity in {selected_year}"
@@ -110,21 +99,9 @@ def main():
             display_df = year_df[year_df['Month_Name'] == selected_month_view]
             view_title = f"Activity in {selected_month_view} {selected_year}"
 
-        # Calculate Monthly Metrics (Small sub-metrics)
         month_total = display_df['Amount'].sum()
-        
-        # Show Table
         st.markdown(f"**{view_title}** - Total: **${month_total:,.2f}**")
         
         display_cols = ["Date", "Sender", "Amount", "Doctor"]
         st.dataframe(
-            display_df.sort_values(by="Date Object", ascending=False)[display_cols], 
-            use_container_width=True, 
-            hide_index=True
-        )
-        
-    else:
-        st.info("Sheet is connected, but empty.")
-
-if __name__ == "__main__":
-    main()
+            display_df.sort_values(by="Date Object
