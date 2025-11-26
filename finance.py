@@ -5,7 +5,7 @@ import json
 from datetime import datetime
 
 # --- CONFIGURATION ---
-SHEET_NAME = 'EMG Payments Kitchener'
+SHEET_NAME = 'interac Payments recieved'
 CREDENTIALS_FILE = 'credentials.json'
 
 # --- CONNECT TO GOOGLE ---
@@ -114,3 +114,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
